@@ -1,5 +1,6 @@
 from itertools import chain, combinations
-
+import math
+import random
 
 class TreeNode:
     def __init__(self, name):
@@ -7,7 +8,8 @@ class TreeNode:
         self.children = []
         self.parent = None
         self.is_tepid = False
-        self.invocation_distance = 0
+        self.invocation_distance = []
+
 
     def __getitem__(self, key):
         for child in self.children:
@@ -30,34 +32,84 @@ class TreeNode:
     def __repr__(self):
         return str(self.name)
 
-    def get_nearest_tepid(self, name):
+    def get_nearest_tepid(self, name:frozenset):
+        if len(name) == 0:
+            return None
         """
         get_nearest_tepid(node)
         """
-        found_node = self.find(name)
-        if found_node:
-            return found_node
+        found_nodes = self.find(name)
+        tepid_found_nodes = [node for node in found_nodes if node.is_tepid]
+        if tepid_found_nodes:
+            return tepid_found_nodes
+        
         else:
-            return 'Noooo'
+            # try finding paretns
+            ps = get_powerset(name)
+            print(ps)
+            sorted_powerset = sorted(ps, key=lambda x: len(x), reverse=True)
+            
+            for subset in sorted_powerset:
+                fs =frozenset(subset)
+                found_nodes = self.find(fs)
+                tepid_found_nodes = [node for node in found_nodes if node.is_tepid]
+                if tepid_found_nodes:
+                    return tepid_found_nodes
+                
+            return None
+        
 
-
-    def run_on(self, function_node ,runner_node):
+        
+    def run_on(self, function_node : frozenset ,runner_node: 'TreeNode'):
         """
         get_nearest_tepid(node)
         """
+        distance = len(function_node) - len(runner_node.name)
+        runner_node.invocation_distance.append(distance)
 
-    def config(self, tepid_nodes: list = None) -> list:
+    def init(self, tepid_nodes) -> list:
         """
         set config
         """
+        for node in tepid_nodes:
+            found_nodes = self.find(node)
+            for found in found_nodes:
+                found.is_tepid = True
+
 
     def reconfig(self) -> list:
-        """
-        set reconfig
-        """
+        tepids = self.get_tepids()
+        for node in tepids:
+            if len(node.invocation_distance) == 0:
+                continue
+            node.is_tepid = False
+            real_distance = sum(node.invocation_distance)/len(node.invocation_distance)
+            
+            new_tepid_node = node
+            if real_distance < 0:
+                real_distance = -real_distance
+                real_distance = math.ceil(real_distance)
 
-    def print_tree(self, num_of_space=2):
-        print(self.name)
+                for _ in range(real_distance):
+                    if new_tepid_node.parent:
+                        new_tepid_node = new_tepid_node.parent
+            else:
+                real_distance = math.ceil(real_distance)
+                for _ in range(real_distance):
+                    if new_tepid_node.children:
+                        new_tepid_node = random.choice(new_tepid_node.children)
+
+            new_tepid_node.is_tepid = True
+        new_tepids = self.get_tepids()
+        return new_tepids
+
+
+
+    def print_tree(self, num_of_space=2,tepid=True,invocation_distance=True):
+        prefix = "* " if (self.is_tepid and tepid) else " "
+        prefix += str(self.invocation_distance)+" " if invocation_distance else " "
+
+        print(prefix + str(self.name).replace('frozenset','').replace('(','').replace(')',''))
         fix_part = "├" + 4 * "─"
         for child in self.children:
             print(num_of_space * " ", end="")
@@ -82,17 +134,24 @@ class TreeNode:
         """
         get_tepids
         """
+        tepids = []
+        for child in self.children:
+            tepids+=child.get_tepids()
+        if self.is_tepid:
+            tepids.append(self)
+        return tepids
+
+        
 
     def reset(self, reset_tepids=True):
         """
         reset
         """
-
-    def print_tepids(self):
-        """
-        print_tepids
-        """
-
+        if reset_tepids:
+            self.is_tepid = False
+        self.invocation_distance = []
+        for child in self.children:
+            child.reset(reset_tepids)
 
 # this function make powerset of a given set
 def get_powerset(in_set):
@@ -165,7 +224,32 @@ if __name__ == "__main__":
         "nodejs": [frozenset({"nnn"})],
         "java": [],
     }
+
+
+
     root = make_tree(data)
+
+    root.init([frozenset({"hh", "flask"}),
+            frozenset({"pandas"}),
+            frozenset({"numpy", "flask"}),])
+    
+    nears = root.get_nearest_tepid(frozenset({"numpy", "flask"}))
+    near = nears[0]
+    root.run_on(frozenset({"numpy", "flask"}),near)
+    root.run_on(frozenset({"numpy"}),near)
+
+    old_tepids = root.get_tepids()
+    print(old_tepids)
+    print(near.invocation_distance)
+    new_tepids = root.reconfig()
+    print(new_tepids)
+
+
     # root.print_tree()
-    found =root.get_nearest_tepid(frozenset({'pyspark', 'flask', 'numpy'}))
-    print('I Found this:',found)
+
+    # founds =root.find(frozenset({"numpy", "pyspark"}))
+    # for f in founds:
+    #     f.is_tepid = True
+    # found =root.get_nearest_tepid(frozenset({'hh',"numpy", "asdsa"}))
+
+    # print('I Found this:',found)
