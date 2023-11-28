@@ -46,6 +46,10 @@ class TreeNode:
         else:
             # try finding paretns
             ps = get_powerset(name)
+            if len(name)==1:
+                father = found_nodes[0].parent
+                if father:
+                    ps.append(father.name)
             print(ps)
             sorted_powerset = sorted(ps, key=lambda x: len(x), reverse=True)
             
@@ -209,7 +213,7 @@ def make_tree(data):
 
 if __name__ == "__main__":
     data = {
-        "python": [
+        frozenset({"python"}): [
             frozenset({"pyspark", "flask"}),
             frozenset({"numpy"}),
             frozenset({"hh"}),
@@ -219,37 +223,21 @@ if __name__ == "__main__":
             frozenset({"numpy", "pyspark", "flask"}),
             frozenset({"numpy", "pyspark"}),
             frozenset({"pyspark"}),
-            frozenset({"flask"}),
+            frozenset({"flask"})
         ],
-        "nodejs": [frozenset({"nnn"})],
-        "java": [],
+        frozenset({"nodejs"}): [frozenset({"nnn"})],
+        frozenset({"java"}): [],
     }
 
 
 
     root = make_tree(data)
-
     root.init([frozenset({"hh", "flask"}),
-            frozenset({"pandas"}),
+            frozenset({"pandas"}),frozenset({"python"}),
             frozenset({"numpy", "flask"}),])
     
-    nears = root.get_nearest_tepid(frozenset({"numpy", "flask"}))
+    root.print_tree()
+
+    nears = root.get_nearest_tepid(frozenset({ "flask"}))
     near = nears[0]
-    root.run_on(frozenset({"numpy", "flask"}),near)
-    root.run_on(frozenset({"numpy"}),near)
-
-    old_tepids = root.get_tepids()
-    print(old_tepids)
-    print(near.invocation_distance)
-    new_tepids = root.reconfig()
-    print(new_tepids)
-
-
-    # root.print_tree()
-
-    # founds =root.find(frozenset({"numpy", "pyspark"}))
-    # for f in founds:
-    #     f.is_tepid = True
-    # found =root.get_nearest_tepid(frozenset({'hh',"numpy", "asdsa"}))
-
-    # print('I Found this:',found)
+    print("near: ",near)
