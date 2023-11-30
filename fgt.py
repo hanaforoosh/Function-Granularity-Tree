@@ -2,6 +2,7 @@ from itertools import chain, combinations
 import math
 import random
 
+
 class TreeNode:
     def __init__(self, name):
         self.name = name
@@ -9,7 +10,6 @@ class TreeNode:
         self.parent = None
         self.is_tepid = False
         self.invocation_distance = []
-
 
     def __getitem__(self, key):
         for child in self.children:
@@ -32,7 +32,7 @@ class TreeNode:
     def __repr__(self):
         return str(self.name)
 
-    def get_nearest_tepid(self, name:frozenset):
+    def get_nearest_tepid(self, name: frozenset):
         if len(name) == 0:
             return None
         """
@@ -42,29 +42,27 @@ class TreeNode:
         tepid_found_nodes = [node for node in found_nodes if node.is_tepid]
         if tepid_found_nodes:
             return tepid_found_nodes
-        
+
         else:
             # try finding paretns
             ps = get_powerset(name)
-            if len(name)==1:
-                father = found_nodes[0].parent
-                if father:
-                    ps.append(father.name)
+            # if len(name)==1:
+            #     father = found_nodes[0].parent
+            #     if father:
+            #         ps.append(father.name)
             print(ps)
             sorted_powerset = sorted(ps, key=lambda x: len(x), reverse=True)
-            
+
             for subset in sorted_powerset:
-                fs =frozenset(subset)
+                fs = frozenset(subset)
                 found_nodes = self.find(fs)
                 tepid_found_nodes = [node for node in found_nodes if node.is_tepid]
                 if tepid_found_nodes:
                     return tepid_found_nodes
-                
-            return None
-        
 
-        
-    def run_on(self, function_node : frozenset ,runner_node: 'TreeNode'):
+            return None
+
+    def run_on(self, function_node: frozenset, runner_node: "TreeNode"):
         """
         get_nearest_tepid(node)
         """
@@ -80,15 +78,16 @@ class TreeNode:
             for found in found_nodes:
                 found.is_tepid = True
 
-
     def reconfig(self) -> list:
         tepids = self.get_tepids()
         for node in tepids:
             if len(node.invocation_distance) == 0:
                 continue
             node.is_tepid = False
-            real_distance = sum(node.invocation_distance)/len(node.invocation_distance)
-            
+            real_distance = sum(node.invocation_distance) / len(
+                node.invocation_distance
+            )
+
             new_tepid_node = node
             if real_distance < 0:
                 real_distance = -real_distance
@@ -107,13 +106,14 @@ class TreeNode:
         new_tepids = self.get_tepids()
         return new_tepids
 
-
-
-    def print_tree(self, num_of_space=2,tepid=True,invocation_distance=True):
+    def print_tree(self, num_of_space=2, tepid=True, invocation_distance=True):
         prefix = "* " if (self.is_tepid and tepid) else " "
-        prefix += str(self.invocation_distance)+" " if invocation_distance else " "
+        prefix += str(self.invocation_distance) + " " if invocation_distance else " "
 
-        print(prefix + str(self.name).replace('frozenset','').replace('(','').replace(')',''))
+        print(
+            prefix
+            + str(self.name).replace("frozenset", "").replace("(", "").replace(")", "")
+        )
         fix_part = "├" + 4 * "─"
         for child in self.children:
             print(num_of_space * " ", end="")
@@ -140,12 +140,10 @@ class TreeNode:
         """
         tepids = []
         for child in self.children:
-            tepids+=child.get_tepids()
+            tepids += child.get_tepids()
         if self.is_tepid:
             tepids.append(self)
         return tepids
-
-        
 
     def reset(self, reset_tepids=True):
         """
@@ -156,6 +154,7 @@ class TreeNode:
         self.invocation_distance = []
         for child in self.children:
             child.reset(reset_tepids)
+
 
 # this function make powerset of a given set
 def get_powerset(in_set):
@@ -174,7 +173,7 @@ def get_powerset(in_set):
 
 
 def make_tree(data):
-    root = TreeNode("Alpine")
+    root = TreeNode(frozenset({"Alpine"}))
     for k, v in data.items():
         node_k = TreeNode(k)
         root[node_k.name] = node_k
@@ -206,38 +205,37 @@ def make_tree(data):
     return root
 
 
-# for k,v in data.items():
-#     # v is python for example
-#     for packs in v:
-#         root[k][v] = TreeNode(packs)
-
 if __name__ == "__main__":
     data = {
-        frozenset({"python"}): [
-            frozenset({"pyspark", "flask"}),
-            frozenset({"numpy"}),
-            frozenset({"hh"}),
-            frozenset({"hh", "flask"}),
-            frozenset({"pandas"}),
-            frozenset({"numpy", "flask"}),
-            frozenset({"numpy", "pyspark", "flask"}),
-            frozenset({"numpy", "pyspark"}),
-            frozenset({"pyspark"}),
-            frozenset({"flask"})
+        frozenset({"Alpine", "python"}): [
+            frozenset({"Alpine", "python", "pyspark", "flask"}),
+            frozenset({"Alpine", "python", "numpy"}),
+            frozenset({"Alpine", "python", "hh"}),
+            frozenset({"Alpine", "python", "hh", "flask"}),
+            frozenset({"Alpine", "python", "pandas"}),
+            frozenset({"Alpine", "python", "numpy", "flask"}),
+            frozenset({"Alpine", "python", "numpy", "pyspark", "flask"}),
+            frozenset({"Alpine", "python", "numpy", "pyspark"}),
+            frozenset({"Alpine", "python", "pyspark"}),
+            frozenset({"Alpine", "python", "flask"}),
         ],
-        frozenset({"nodejs"}): [frozenset({"nnn"})],
-        frozenset({"java"}): [],
+        frozenset({"Alpine", "nodejs"}): [frozenset({"nnn"})],
+        frozenset({"Alpine", "java"}): [],
     }
 
-
-
     root = make_tree(data)
-    root.init([frozenset({"hh", "flask"}),
-            frozenset({"pandas"}),frozenset({"python"}),
-            frozenset({"numpy", "flask"}),])
-    
+    root.print_tree()
+    root.init(
+        [
+            frozenset({"Alpine", "python", "hh", "flask"}),
+            frozenset({"Alpine", "python", "pandas"}),
+            frozenset({"Alpine"}),
+            frozenset({"Alpine", "python", "numpy", "flask"}),
+        ]
+    )
+
     root.print_tree()
 
-    nears = root.get_nearest_tepid(frozenset({ "flask"}))
+    nears = root.get_nearest_tepid(frozenset({"Alpine", "python", "flask"}))
     near = nears[0]
-    print("near: ",near)
+    print("near: ", near)
