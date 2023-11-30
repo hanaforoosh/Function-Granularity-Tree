@@ -32,35 +32,68 @@ class TreeNode:
     def __repr__(self):
         return str(self.name)
 
-    def get_nearest_tepid(self, name: frozenset):
-        if len(name) == 0:
+    def get_nearest_tepid(self,language: str, packages: frozenset):
+        if len(packages) == 0:
             return None
         """
         get_nearest_tepid(node)
         """
-        found_nodes = self.find(name)
+        found_nodes = self.find(packages)            
+
         tepid_found_nodes = [node for node in found_nodes if node.is_tepid]
         if tepid_found_nodes:
             return tepid_found_nodes
+        
+        if found_nodes != []:
+            down_candidates = []
 
-        else:
-            # try finding paretns
-            ps = get_powerset(name)
-            # if len(name)==1:
-            #     father = found_nodes[0].parent
-            #     if father:
-            #         ps.append(father.name)
-            print(ps)
-            sorted_powerset = sorted(ps, key=lambda x: len(x), reverse=True)
+            
+            children = [n for n in found_nodes]
+            node_candidates = [set(n.name) for n in found_nodes]
+            while True:
+                new_children = []
+                for n in children:
+                    for c in n.children:
+                        new_children.append(c)
+                if new_children == []:
+                    break
+                children = new_children
+                node_candidates+=[set(n.name) for n in children]
 
-            for subset in sorted_powerset:
-                fs = frozenset(subset)
-                found_nodes = self.find(fs)
-                tepid_found_nodes = [node for node in found_nodes if node.is_tepid]
-                if tepid_found_nodes:
-                    return tepid_found_nodes
 
-            return None
+
+            down_candidates = [n for n in node_candidates]
+            down_candidates = sorted(down_candidates, key=lambda x: len(x), reverse=False)
+
+            
+
+        
+        up_candidates = get_powerset(packages)
+        up_candidates = sorted(up_candidates, key=lambda x: len(x), reverse=True)
+        up_candidates += [{language},{'Alpine'}]
+
+        candidates = []
+        for i in range(len(up_candidates)+len(down_candidates)):
+            if i % 2 == 0:
+                try:
+                    candidates.append(down_candidates[i//2])
+                except:
+                    candidates.append(up_candidates[i//2])
+            else:
+                try:
+                    candidates.append(up_candidates[i//2])
+                except:
+                    candidates.append(down_candidates[i//2])
+
+
+        for subset in candidates:
+            fs = frozenset(subset)
+            found_nodes = self.find(fs)
+            tepid_found_nodes = [node for node in found_nodes if node.is_tepid]
+            if tepid_found_nodes:
+                return tepid_found_nodes
+
+        return None
 
     def run_on(self, function_node: frozenset, runner_node: "TreeNode"):
         """
@@ -121,7 +154,7 @@ class TreeNode:
             new_number_of_space = num_of_space + len(fix_part) + (len(str(self.name)))
             child.print_tree(new_number_of_space)
 
-    def find(self, name):
+    def find(self, name:frozenset):
         result = []
         if self.name == name:
             result.append(self)
@@ -204,7 +237,6 @@ def make_tree(data):
             length += 1
     return root
 
-
 if __name__ == "__main__":
     data = {
         frozenset({"python"}): [
@@ -215,6 +247,8 @@ if __name__ == "__main__":
             frozenset({"pandas"}),
             frozenset({"numpy", "flask"}),
             frozenset({"numpy", "pyspark", "flask"}),
+            frozenset({"numpy", "pandas", "flask"}),
+            frozenset({"numpy", "pandas", "flask",'a'}),
             frozenset({"numpy", "pyspark"}),
             frozenset({"pyspark"}),
             frozenset({"flask"}),
@@ -225,17 +259,16 @@ if __name__ == "__main__":
 
     root = make_tree(data)
     root.print_tree()
-    # root.init(
-    #     [
-    #         frozenset({"hh", "flask"}),
-    #         frozenset({"pandas"}),
-    #         frozenset({"Alpine"}),
-    #         frozenset({"numpy", "flask"}),
-    #     ]
-    # )
+    root.init(
+        [
+            frozenset({"hh", "flask"}),
+            frozenset({"Alpine"}),
+            frozenset({"numpy", "flask"}),
+            frozenset({"numpy", "pandas", "flask",'a'}),
+        ]
+    )
 
-    # root.print_tree()
+    root.print_tree()
 
-    # nears = root.get_nearest_tepid(frozenset({"flask"}))
-    # near = nears[0]
-    # print("near: ", near)
+    nears = root.get_nearest_tepid("python",frozenset({"numpy", "flask","pandas"}))
+    print(nears)
