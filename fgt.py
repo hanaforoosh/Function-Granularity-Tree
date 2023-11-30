@@ -207,35 +207,35 @@ def make_tree(data):
 
 if __name__ == "__main__":
     data = {
-        frozenset({"Alpine", "python"}): [
-            frozenset({"Alpine", "python", "pyspark", "flask"}),
-            frozenset({"Alpine", "python", "numpy"}),
-            frozenset({"Alpine", "python", "hh"}),
-            frozenset({"Alpine", "python", "hh", "flask"}),
-            frozenset({"Alpine", "python", "pandas"}),
-            frozenset({"Alpine", "python", "numpy", "flask"}),
-            frozenset({"Alpine", "python", "numpy", "pyspark", "flask"}),
-            frozenset({"Alpine", "python", "numpy", "pyspark"}),
-            frozenset({"Alpine", "python", "pyspark"}),
-            frozenset({"Alpine", "python", "flask"}),
+        frozenset({"python"}): [
+            frozenset({"pyspark", "flask"}),
+            frozenset({"numpy"}),
+            frozenset({"hh"}),
+            frozenset({"hh", "flask"}),
+            frozenset({"pandas"}),
+            frozenset({"numpy", "flask"}),
+            frozenset({"numpy", "pyspark", "flask"}),
+            frozenset({"numpy", "pyspark"}),
+            frozenset({"pyspark"}),
+            frozenset({"flask"}),
         ],
-        frozenset({"Alpine", "nodejs"}): [frozenset({"nnn"})],
-        frozenset({"Alpine", "java"}): [],
+        frozenset({"nodejs"}): [frozenset({"nnn"})],
+        frozenset({"java"}): [],
     }
 
     root = make_tree(data)
     root.print_tree()
-    root.init(
-        [
-            frozenset({"Alpine", "python", "hh", "flask"}),
-            frozenset({"Alpine", "python", "pandas"}),
-            frozenset({"Alpine"}),
-            frozenset({"Alpine", "python", "numpy", "flask"}),
-        ]
-    )
+    # root.init(
+    #     [
+    #         frozenset({"hh", "flask"}),
+    #         frozenset({"pandas"}),
+    #         frozenset({"Alpine"}),
+    #         frozenset({"numpy", "flask"}),
+    #     ]
+    # )
 
-    root.print_tree()
+    # root.print_tree()
 
-    nears = root.get_nearest_tepid(frozenset({"Alpine", "python", "flask"}))
-    near = nears[0]
-    print("near: ", near)
+    # nears = root.get_nearest_tepid(frozenset({"flask"}))
+    # near = nears[0]
+    # print("near: ", near)
