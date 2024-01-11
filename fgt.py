@@ -2,7 +2,6 @@ from itertools import chain, combinations
 import math
 import random
 
-
 class TreeNode:
     def __init__(self, name):
         self.name = name
@@ -154,6 +153,15 @@ class TreeNode:
             new_number_of_space = num_of_space + len(fix_part) + (len(str(self.name)))
             child.print_tree(new_number_of_space)
 
+    def json_tree(self):
+        jsoned = {}
+        name =str(self.name).replace("frozenset", "").replace("(", "").replace(")", "")
+        children = []
+        for child in self.children:
+            children.append(child.json_tree())
+        jsoned[name] = children
+        return jsoned
+
     def find(self, name:frozenset):
         result = []
         if self.name == name:
@@ -259,6 +267,9 @@ if __name__ == "__main__":
 
     root = make_tree(data)
     root.print_tree()
+
+    with open('tree.json', 'w') as outfile:
+        outfile.write(str(root.json_tree()))
     root.init(
         [
             frozenset({"hh", "flask"}),
